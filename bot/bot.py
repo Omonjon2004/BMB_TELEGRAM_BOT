@@ -65,24 +65,24 @@ lang_data = {
 user_language = {}
 user_state = defaultdict(list)  # Foydalanuvchi holatini saqlash
 
-# Foydalanuvchi holatini yangilash
 def update_user_state(user_id, new_state):
     if user_state[user_id] and user_state[user_id][-1] == new_state:
         return
     user_state[user_id].append(new_state)
 
-# Foydalanuvchini oldingi holatga qaytarish
 def go_back(user_id):
     if user_state[user_id]:
         user_state[user_id].pop()
     return user_state[user_id][-1] if user_state[user_id] else "language_choice"
 
-# Tilni tanlash klaviaturasi
+# Tilni tanlash interfeysi
 def language_keyboard():
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=lang_data["uz"]["uzbek"], callback_data="lang_uz")],
-        [InlineKeyboardButton(text=lang_data["uz"]["russian"], callback_data="lang_ru")],
-        [InlineKeyboardButton(text=lang_data["uz"]["english"], callback_data="lang_en")]
+        [
+            InlineKeyboardButton(text=lang_data["uz"]["uzbek"], callback_data="lang_uz"),
+            InlineKeyboardButton(text=lang_data["uz"]["russian"], callback_data="lang_ru"),
+            InlineKeyboardButton(text=lang_data["uz"]["english"], callback_data="lang_en"),
+        ]
     ])
 
 # Asosiy menyu klaviaturasi
@@ -92,6 +92,19 @@ def menu_keyboard(lang):
         [InlineKeyboardButton(text=lang_data[lang]["company_info"], callback_data="company_info")],
         [InlineKeyboardButton(text=lang_data[lang]["order_product"], callback_data="order_product")],
         [InlineKeyboardButton(text=lang_data[lang]["view_cart"], callback_data="view_cart")],
+        [InlineKeyboardButton(text=lang_data[lang]["back"], callback_data="back_to_main")]
+    ])
+
+# Kompaniya haqida ma'lumot sahifasi klaviaturasi
+def company_info_keyboard(lang):
+    url_mapping = {
+        "uz": "https://bmb-holding.uz/kompaniya-haqida/",
+        "ru": "https://bmb-holding.uz/o-kompanii/",
+        "en": "https://bmb-holding.uz/about-us/"
+    }
+    url = url_mapping.get(lang, "https://bmb-holding.uz/")
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=lang_data[lang]["web_link"], url=url)],
         [InlineKeyboardButton(text=lang_data[lang]["back"], callback_data="back_to_main")]
     ])
 
@@ -129,17 +142,7 @@ async def handle_callback(callback_query: types.CallbackQuery):
 
     elif data == "company_info":
         update_user_state(user_id, "company_info")
-        url_mapping = {
-            "uz": "https://bmb-holding.uz/kompaniya-haqida/",
-            "ru": "https://bmb-holding.uz/o-kompanii/",
-            "en": "https://bmb-holding.uz/about-us/"
-        }
-        url = url_mapping.get(lang, "https://bmb-holding.uz/")
-        web_link_text = lang_data[lang]["web_link"]
-        keyboard = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text=web_link_text, url=url)],
-            [InlineKeyboardButton(text=lang_data[lang]["back"], callback_data="back_to_main")]
-        ])
+        keyboard = company_info_keyboard(lang)
         company_details = lang_data[lang]["company_details"]
         await callback_query.message.edit_text(company_details, reply_markup=keyboard)
 
