@@ -31,7 +31,8 @@ class Users(AbstractUser,TimeStampedModel):
         null=True,
         verbose_name="Avatar"
     )
-
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name="Latitude")
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name="Longitude")
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
